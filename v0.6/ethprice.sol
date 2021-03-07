@@ -18,21 +18,20 @@ contract APIConsumer is ChainlinkClient {
      * Fee: 0.1 LINK
      */
     constructor() public {
-        setPublicChainlinkToken();
-        oracle = 0x7AFe1118Ea78C1eae84ca8feE5C65Bc76CcF879e;
-        jobId = "29fa9aa13bf1468788b7cc4a500a45b8";
+        setPublicChainlinkToken(); // setta il token pubblico della chainlink
+        oracle = 0x7AFe1118Ea78C1eae84ca8feE5C65Bc76CcF879e; //  https://market.link/ 
+        jobId = "29fa9aa13bf1468788b7cc4a500a45b8";  // https://market.link/
         fee = 0.1 * 10 ** 18; // 0.1 LINK
     }
     
     /**
-     * Create a Chainlink request to retrieve API response, find the target
-     * data, then multiply by 1000000000000000000 (to remove decimal places from data).
+     * Crea la request e la invia all'oracolo     
      */
     function requestVolumeData() public returns (bytes32 requestId) 
     {
         Chainlink.Request memory request = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
         
-        // Set the URL to perform the GET request on
+        // Imposta url, request e paramentri
         request.add("get", "https://min-api.cryptocompare.com/data/pricemultifull?fsyms=ETH&tsyms=USD");
         
         // Set the path to find the desired data in the API response, where the response format is:
@@ -47,16 +46,16 @@ contract APIConsumer is ChainlinkClient {
         //  }
         request.add("path", "RAW.ETH.USD.VOLUME24HOUR");
         
-        // Multiply the result by 1000000000000000000 to remove decimals
+        // moltiplica per 1000000000000000000 per rimuovere i decimali
         int timesAmount = 10**18;
         request.addInt("times", timesAmount);
         
-        // Sends the request
+        // invia la request
         return sendChainlinkRequestTo(oracle, request, fee);
     }
     
     /**
-     * Receive the response in the form of uint256
+     * riceve la risposta
      */ 
     function fulfill(bytes32 _requestId, uint256 _volume) public recordChainlinkFulfillment(_requestId)
     {
